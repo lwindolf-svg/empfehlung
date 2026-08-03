@@ -228,13 +228,13 @@ function melde(daten){
 // Texte je nach Du/Sie
 const T = DU ? {
   rolle:"Dein Finanzcoach",
-  nameTitel:"Schön, dass du mir hilfst!", nameSub:"Dass du dir kurz Zeit nimmst, bedeutet mir viel. Wie heißt du?", namePlatz:"Dein Vorname",
+  nameTitel:"Danke für deine Unterstützung!", nameSub:"Dass du dir kurz Zeit nimmst, bedeutet mir viel. Wie darf ich dich ansprechen?", namePlatz:"Dein Vorname",
   startSub:"Deine ehrliche Meinung ist mir viel wert.",
   startFrage:"Wie wahrscheinlich ist es, dass du mich an eine Freundin / einen Freund oder eine Kollegin / einen Kollegen weiterempfiehlst?",
   tiefTitel:"Danke für deine Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was können wir besser machen?", tiefPlatz:"Dein Verbesserungsvorschlag …",
   tiefMini:"Deine Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Mega, freut mich!", hochSub:"Was hat dir besonders gefallen? (bis zu 3)",
-  fertigSub:"Aus deiner Auswahl gemacht — gern anpassen, dann teilen.",
+  fertigSub:"Dein Text steht. Ändere gern, was du anders sagen würdest — und teile ihn dann.",
   teilen:"Weiterleiten zu WhatsApp", fertigMini:"Du wählst selbst, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass du dir die Zeit genommen hast.",
   datenschutz:"Deine Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
@@ -246,7 +246,7 @@ const T = DU ? {
   tiefTitel:"Danke für Ihre Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was hätte besser sein können?", tiefPlatz:"Ihr Verbesserungsvorschlag …",
   tiefMini:"Ihre Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Klasse, das freut mich!", hochSub:"Was hat Ihnen besonders gefallen? (bis zu 3)",
-  fertigSub:"Aus Ihrer Auswahl gemacht — gern anpassen, dann teilen.",
+  fertigSub:"Ihr Text steht. Ändern Sie gern, was Sie anders sagen würden — und teilen Sie ihn dann.",
   teilen:"Weiterleiten zu WhatsApp", fertigMini:"Sie wählen selbst, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass Sie sich die Zeit genommen haben.",
   datenschutz:"Ihre Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
@@ -480,20 +480,23 @@ $("btn-text-erstellen").onclick=()=>{
   // Zweite Meldung mit denselben Kennung, jetzt mit den Stichworten.
   melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name, stichworte:[...gewaehlt]});
   $("empf-text").value = friendText();
+  // Adresse gleich hinterlegen, damit der Knopf auch ohne Klick-Handler ein echter Link ist.
+  $("btn-teilen").href = wa("", $("empf-text").value);
   $("btn-google").style.display = KONFIG.googleReviewUrl ? "flex" : "none";
   zeige("s-fertig");
 };
-// melde() steht VOR window.open — sonst wertet der Browser das Fenster als Popup und blockiert es.
+// WICHTIG: KEIN window.open und KEIN preventDefault. Handys blockieren ein per
+// JavaScript geoeffnetes Fenster regelmaessig als Werbe-Popup — dann passiert beim
+// Tippen gar nichts. Stattdessen bekommt der Knopf direkt vor dem Klick die echte
+// Adresse; der Browser folgt ihr dann als ganz normalem Link.
 $("btn-teilen").addEventListener("click", e=>{
-  e.preventDefault();
+  e.currentTarget.href = wa("", $("empf-text").value);   // nimmt auch vom Kunden geaenderten Text mit
   melde({art:"geteilt", weg:"whatsapp"});
-  window.open(wa("", $("empf-text").value), "_blank");
 });
 $("btn-google").addEventListener("click", e=>{
-  e.preventDefault();
+  e.currentTarget.href = KONFIG.googleReviewUrl || "#";
   melde({art:"geteilt", weg:"google"});
   try{ navigator.clipboard.writeText(googleText()); }catch(err){}
-  window.open(KONFIG.googleReviewUrl, "_blank");
 });
 $("btn-kopieren").onclick=()=>{
   $("empf-text").select();

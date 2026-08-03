@@ -87,9 +87,12 @@
      auch auf schmalen Displays, dort mit etwas kleinerer Schrift. */
   .cta{display:flex;gap:10px;flex-wrap:nowrap;margin-top:24px}
   .cta .btn{flex:1 1 0;min-width:0;justify-content:center;text-align:center;white-space:nowrap}
+  /* Auf schmalen Handys passten die beiden Knoepfe nicht nebeneinander — die
+     Beschriftung stand ueber den Rand hinaus. Dort stehen sie deshalb
+     untereinander, jeder auf voller Breite. */
   @media(max-width:430px){
-    .cta .btn{font-size:14.5px;padding:13px 10px;gap:6px}
-    .cta .btn svg{width:17px;height:17px}
+    .cta{flex-wrap:wrap}
+    .cta .btn{flex:1 1 100%;font-size:15.5px;padding:14px 12px;gap:7px;white-space:normal}
   }
   .btn{border:0;border-radius:11px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer;
     text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:transform .06s,box-shadow .12s}
@@ -584,7 +587,9 @@ document.getElementById("anfrage").addEventListener("submit", function(e){
     (d.get("thema") ? "Thema: " + d.get("thema") + "\n" : "")+
     (d.get("nachricht") ? "Nachricht: " + d.get("nachricht") : "")+
     (empfehler ? "\n(Empfehlung: " + empfehler + ")" : "");
-  window.open(waLink(text), "_blank");
+  // Kein window.open: Handys blockieren per JavaScript geoeffnete Fenster oft als
+  // Popup — dann passiert beim Tippen nichts. Ein normaler Seitenwechsel geht immer.
+  window.location.href = waLink(text);
 });
 </script>
 </body>
