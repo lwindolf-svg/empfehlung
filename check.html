@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wie zufrieden waren Sie? — Leon Windolf</title>
+<style>
+  :root{
+    --blau:#1b2a5b; --blau-dunkel:#101d40; --blau-hell:#f6efd9;
+    --text:#000; --schwach:#4a4a4a; --linie:#e8e2d0;
+    --gruen:#25d366; --rot:#d64545; --gold:#c2a24d; --gold-dunkel:#a3822f;
+    --schatten:0 2px 8px rgba(40,30,10,.08),0 12px 34px rgba(40,30,10,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);
+    background:linear-gradient(170deg,var(--blau-hell),#fff 60%);min-height:100vh;
+    -webkit-font-smoothing:antialiased;line-height:1.5;display:flex;align-items:flex-start;justify-content:center;padding:42px 16px 60px}
+  .karte{background:#fff;border:1px solid var(--linie);border-radius:18px;box-shadow:var(--schatten);
+    width:100%;max-width:480px;padding:30px 26px;margin-top:14px}
+  .kopf{text-align:center;margin-bottom:22px}
+  .kopf .foto{width:56px;height:56px;border-radius:50%;background:var(--gold);color:var(--text);font-weight:700;
+    font-size:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;background-size:cover;background-position:center}
+  /* Freisteller ohne Schultern: mittig im Kreis wirkt der Kopf schwebend. Deshalb Bild
+     vergroessern und nach UNTEN setzen, damit der Hals am Kreisrand herauslaeuft.
+     Nicht "background:none" nehmen — das setzt auch background-size zurueck. */
+  .kopf .foto.frei{width:70px;height:70px;background-color:#fff;border:1.5px solid var(--gold);
+    background-size:auto 94%;background-position:50% 100%;background-repeat:no-repeat}
+  .kopf .n{font-weight:700}.kopf .r{font-size:13px;color:var(--schwach)}
+  h1{font-size:22px;text-align:center;margin:0 0 6px;line-height:1.25}
+  p.sub{text-align:center;color:var(--schwach);font-size:15px;margin:0 auto 22px;max-width:360px}
+  .schritt{display:none}.schritt.aktiv{display:block;animation:rein .25s ease}
+  @keyframes rein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .frage{font-size:13.5px;color:var(--schwach);text-align:center;margin-bottom:10px}
+  .skala{display:flex;flex-wrap:nowrap;justify-content:center;gap:4px;margin:10px 0 6px}
+  .skala button{flex:1 1 0;min-width:0;height:42px;padding:0;border:1.5px solid var(--linie);background:#fff;border-radius:8px;font-size:14px;
+    font-weight:700;color:var(--text);cursor:pointer;transition:transform .06s,background .12s,border-color .12s}
+  .skala button:hover{transform:translateY(-2px);border-color:var(--gold);background:var(--blau-hell)}
+  .skala-enden{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--schwach);margin-top:4px}
+
+  .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:6px 0 4px}
+  .chip{border:1.5px solid var(--linie);background:#fff;border-radius:30px;padding:9px 15px;font-size:14.5px;
+    cursor:pointer;user-select:none;transition:.12s}
+  .chip:hover{border-color:var(--gold)}
+  .chip.an{background:var(--gold);color:var(--text);border-color:var(--gold)}
+  .chip.aus{opacity:.35;cursor:default}
+  .chip.aus:hover{border-color:var(--linie)}
+
+  input[type=text],textarea{width:100%;border:1.5px solid var(--linie);border-radius:11px;padding:12px 13px;font-size:15px;
+    font-family:inherit;color:var(--text)}
+  textarea{min-height:96px;resize:vertical}
+  input:focus,textarea:focus{outline:2px solid var(--blau-hell);border-color:var(--gold)}
+
+  .btn{display:flex;width:100%;justify-content:center;align-items:center;gap:9px;border:0;border-radius:12px;
+    padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;text-decoration:none;transition:transform .06s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.wa{background:var(--gruen);color:#fff;box-shadow:0 6px 18px rgba(37,211,102,.32)}
+  .btn.google{background:#fff;color:#1a1a1a;border:1.5px solid var(--linie)}
+  .btn.gold{background:var(--gold);color:var(--text)}
+  .btn.gold:hover{background:var(--gold-dunkel)}
+  .btn.geist{background:#fff;color:var(--schwach);border:1.5px solid var(--linie);box-shadow:none;font-weight:600;font-size:14px;padding:11px}
+  .mini{font-size:12.5px;color:var(--schwach);text-align:center;margin-top:12px}
+  .datenschutz{font-size:11.5px;line-height:1.45;opacity:.85}
+  .hinweis{display:none;color:var(--rot);font-size:13.5px;font-weight:600;text-align:center;margin-top:10px}
+  .hinweis.an{display:block}
+  .chip.fehlt{border-color:var(--rot)}
+  .box{background:var(--blau-hell);border:1px solid var(--linie);border-radius:12px;padding:4px;margin-top:6px}
+  .box textarea{border:0;background:transparent;min-height:210px;line-height:1.55}
+  .sterne{text-align:center;color:var(--gold);font-size:20px;letter-spacing:3px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="karte">
+  <div class="kopf">
+    <div class="foto" id="foto">LW</div>
+    <div class="n">Leon Windolf</div>
+    <div class="r" id="rolle">Ihr Finanzcoach</div>
+  </div>
+
+  <!-- SCHRITT 0: Name -->
+  <div class="schritt aktiv" id="s-name">
+    <h1 id="name-titel">Wie ist Ihr Name?</h1>
+    <p class="sub" id="name-sub">Damit ich weiß, von wem das Feedback kommt.</p>
+    <div id="anrede-wahl" class="chips" style="justify-content:center;display:none;margin-bottom:12px">
+      <div class="chip" data-anrede="Herr">Herr</div>
+      <div class="chip" data-anrede="Frau">Frau</div>
+    </div>
+    <input type="text" id="name-input" autocomplete="off" autocapitalize="words" spellcheck="false">
+    <div class="hinweis" id="name-hinweis"></div>
+    <button class="btn gold" id="btn-name-weiter">Weiter</button>
+    <div class="mini datenschutz" id="datenschutz-hinweis"></div>
+  </div>
+
+  <!-- SCHRITT 1: NPS -->
+  <div class="schritt" id="s-start">
+    <h1 id="start-titel">Wie zufrieden waren Sie?</h1>
+    <p class="sub" id="start-sub"></p>
+    <div class="frage" id="start-frage"></div>
+    <div class="skala" id="skala"></div>
+    <div class="skala-enden"><span>überhaupt nicht wahrscheinlich</span><span>äußerst wahrscheinlich</span></div>
+  </div>
+
+  <!-- SCHRITT 2a: Verbesserung -->
+  <div class="schritt" id="s-tief">
+    <h1 id="tief-titel"></h1>
+    <p class="sub" id="tief-sub"></p>
+    <textarea id="verbesserung"></textarea>
+    <button class="btn gold" id="btn-feedback">Feedback senden</button>
+    <div class="mini" id="tief-mini"></div>
+  </div>
+
+  <!-- SCHRITT 2b: Adjektive -->
+  <div class="schritt" id="s-hoch">
+    <h1 id="hoch-titel"></h1>
+    <p class="sub" id="hoch-sub"></p>
+    <div class="chips" id="chips"></div>
+    <button class="btn gold" id="btn-text-erstellen">Weiter</button>
+  </div>
+
+  <!-- SCHRITT 3: Fertiger Text -->
+  <div class="schritt" id="s-fertig">
+    <div class="sterne">★★★★★</div>
+    <h1>Fertig</h1>
+    <p class="sub" id="fertig-sub"></p>
+    <div class="box"><textarea id="empf-text"></textarea></div>
+    <a class="btn google" id="btn-google" href="#" target="_blank" style="display:none">Als Google-Bewertung veröffentlichen</a>
+    <a class="btn wa" id="btn-teilen" href="#" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.2-1.7-.8-1.9-.9-.3-.1-.5-.2-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.8-2-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.8 2.8 4.4 3.9 2.6 1.1 2.6.7 3.1.7.5 0 1.6-.7 1.8-1.3.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2z"/></svg>
+      <span id="teilen-label">Weiterleiten</span>
+    </a>
+    <button class="btn geist" id="btn-kopieren">Text kopieren</button>
+    <div class="mini" id="fertig-mini"></div>
+  </div>
+
+  <!-- SCHRITT 4: Danke -->
+  <div class="schritt" id="s-danke">
+    <h1 id="danke-titel">Vielen Dank!</h1>
+    <p class="sub" id="danke-sub"></p>
+  </div>
+</div>
+
+<script>
+/* ============ HIER ANPASSEN ============ */
+const KONFIG = {
+  whatsapp: "4917621927114",          // Leons WhatsApp (Rückfallebene, s.u.)
+  empfehlungsseiteUrl: "https://lwindolf-svg.github.io/empfehlung/",  // Link in die Freunde-Nachricht
+  googleReviewUrl: "",                // Google-"Bewertung schreiben"-Link (leer = Knopf aus)
+  positivAb: 8,                       // ab dieser Bewertung: Empfehlungs-Weg
+  maxLob: 3,                          // so viele Stichworte darf der Kunde höchstens wählen
+  // Web-App-URL des Google-Skripts. Leer = es wird nichts gespeichert, Seite läuft trotzdem.
+  sammelUrl: "https://script.google.com/macros/s/AKfycbwUvvkzIqOJApZCGTX_FWt829_FU1kl9LZrwuVgmz0xsxtAunSHQFGQvbaLNvfX92WBQw/exec",
+  aufbewahrung: "24 Monate",          // steht im Datenschutzhinweis
+  fotoUrl: "foto.png"                 // PNG mit transparentem Rand, siehe .foto.frei im CSS
+};
+// Anlassneutral: passt nach einer Beratung wie nach einer Firmenvorstellung.
+// "unabhängig beraten" gehört hier NICHT rein — Leon ist gebundener Vertreter, kein Makler.
+//
+// "wort"  = was auf dem Knopf steht (kurz, schnell erfassbar)
+// "sagt"  = lockere Verb-Form für die WhatsApp-Nachricht, passend nach "er ...".
+//           Mehrere Varianten, damit nicht jeder Kunde denselben Satz verschickt.
+// "lob"   = Hauptwort-Form für die Google-Bewertung, passend nach "überzeugt mit ...".
+//           So sind echte Bewertungen geschrieben — Verb-Sätze wirken dort gebastelt.
+const ADJEKTIVE = [
+  {wort:"kompetent",
+   sagt:["kennt sich ausgezeichnet aus","weiß genau, wovon er spricht","verfügt über sehr fundiertes Wissen"],
+   lob:["echter Fachkompetenz","fundiertem Wissen"]},
+
+  {wort:"ehrlich & transparent",
+   sagt:["ist ehrlich und legt alles offen","sagt klar, woran man ist","geht sehr transparent vor"],
+   lob:["Ehrlichkeit und Transparenz","einer offenen, ehrlichen Art"]},
+
+  {wort:"verständlich erklärt",
+   sagt:["erklärt alles sehr verständlich","macht auch komplizierte Themen nachvollziehbar","erklärt ohne unnötige Fachbegriffe"],
+   lob:["klaren, leicht verständlichen Erklärungen","Erklärungen ohne unnötige Fachbegriffe"]},
+
+  {wort:"kein Verkaufsdruck",
+   sagt:["macht keinerlei Druck","drängt zu nichts","lässt einem die Entscheidung völlig frei"],
+   lob:["keinerlei Verkaufsdruck","einem Vorgehen ganz ohne Verkaufsdruck"]},
+
+  {wort:"nimmt sich Zeit",
+   sagt:["nimmt sich viel Zeit","lässt ausreichend Zeit für Rückfragen","nimmt sich die Zeit, die man braucht"],
+   lob:["viel Zeit für alle Fragen","spürbarer Geduld"]},
+
+  {wort:"sympathisch",
+   sagt:["ist ausgesprochen sympathisch","tritt sehr angenehm auf","ist im Umgang sehr angenehm"],
+   lob:["einer sehr sympathischen Art","einem angenehmen, souveränen Auftreten"]},
+
+  {wort:"gut vorbereitet",
+   sagt:["ist bestens vorbereitet","bereitet sich sehr gründlich vor","hat sich vorab gut eingearbeitet"],
+   lob:["spürbar guter Vorbereitung","einer sehr sorgfältigen Vorbereitung"]},
+
+  {wort:"schnell erreichbar",
+   sagt:["ist gut erreichbar","meldet sich zuverlässig zurück","antwortet sehr zügig"],
+   lob:["schneller Erreichbarkeit","zuverlässigen Rückmeldungen"]},
+
+  {wort:"endlich Klarheit",
+   sagt:["sorgt für echte Klarheit","bringt Ordnung in das Thema","schafft endlich einen klaren Überblick"],
+   lob:["echter Klarheit im Thema","einem endlich klaren Überblick"]}
+];
+/* ======================================= */
+
+// Modus aus dem QR-Link:  ...check.html?form=du   /   ?form=sie
+const DU = (new URLSearchParams(location.search).get("form")||"sie").toLowerCase()==="du";
+const $ = id => document.getElementById(id);
+let bewertung = 0, name = "", anrede = "", ansprache = "";
+const gewaehlt = new Set();
+
+// Kennung für diesen Durchlauf. Läuft im geteilten Link mit (?e=…), damit später
+// nachvollziehbar ist, wer wen empfohlen hat — ohne den Klarnamen in fremde Chats zu schicken.
+const kennung = Math.random().toString(36).slice(2,7);
+
+// Schickt still an die Sammelstelle. Fehler werden bewusst geschluckt: Ein Kunde
+// soll nie an einer klemmenden Verbindung hängen bleiben — lieber ein Datensatz
+// weniger als ein Ablauf, der stehen bleibt.
+function melde(daten){
+  if(!KONFIG.sammelUrl) return;
+  try{
+    fetch(KONFIG.sammelUrl, {
+      method:"POST",
+      mode:"no-cors",
+      // text/plain verhindert die Vorab-Anfrage, die Google Apps Script nicht beantwortet
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(Object.assign({kennung:kennung, modus: DU?"du":"sie"}, daten))
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+// Texte je nach Du/Sie
+const T = DU ? {
+  rolle:"Dein Finanzcoach",
+  nameTitel:"Schön, dass du mir hilfst!", nameSub:"Dass du dir kurz Zeit nimmst, bedeutet mir viel. Wie heißt du?", namePlatz:"Dein Vorname",
+  startSub:"Deine ehrliche Meinung ist mir viel wert.",
+  startFrage:"Wie wahrscheinlich ist es, dass du mich an eine Freundin / einen Freund oder eine Kollegin / einen Kollegen weiterempfiehlst?",
+  tiefTitel:"Danke für deine Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was können wir besser machen?", tiefPlatz:"Dein Verbesserungsvorschlag …",
+  tiefMini:"Deine Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
+  hochTitel:"Mega, freut mich!", hochSub:"Was hat dir besonders gefallen? (bis zu 3)",
+  fertigSub:"Aus deiner Auswahl gemacht — gern anpassen, dann teilen.",
+  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Du wählst selbst, wohin die Nachricht geht.",
+  dankeSub:"Ich freue mich, dass du dir die Zeit genommen hast.",
+  datenschutz:"Deine Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
+} : {
+  rolle:"Ihr Finanzcoach",
+  nameTitel:"Vielen Dank für Ihre Unterstützung!", nameSub:"Dass Sie sich kurz Zeit nehmen, bedeutet mir viel. Wie darf ich Sie ansprechen?", namePlatz:"Ihr Nachname",
+  startSub:"Ihre ehrliche Meinung ist mir viel wert.",
+  startFrage:"Wie wahrscheinlich ist es, dass Sie mich an eine Freundin / einen Freund oder eine Kollegin / einen Kollegen weiterempfehlen?",
+  tiefTitel:"Danke für Ihre Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was hätte besser sein können?", tiefPlatz:"Ihr Verbesserungsvorschlag …",
+  tiefMini:"Ihre Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
+  hochTitel:"Klasse, das freut mich!", hochSub:"Was hat Ihnen besonders gefallen? (bis zu 3)",
+  fertigSub:"Aus Ihrer Auswahl gemacht — gern anpassen, dann teilen.",
+  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Sie wählen selbst, wohin die Nachricht geht.",
+  dankeSub:"Ich freue mich, dass Sie sich die Zeit genommen haben.",
+  datenschutz:"Ihre Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
+};
+
+// Texte einsetzen
+$("rolle").textContent = T.rolle;
+$("name-titel").textContent = T.nameTitel;
+$("name-sub").textContent = T.nameSub;
+$("name-input").placeholder = T.namePlatz;
+$("start-frage").textContent = T.startFrage;
+$("tief-sub").textContent = T.tiefSub;
+$("verbesserung").placeholder = T.tiefPlatz;
+$("tief-mini").textContent = T.tiefMini;
+// Hinweis nur zeigen, wenn tatsächlich gespeichert wird — sonst wäre er falsch.
+$("datenschutz-hinweis").textContent = KONFIG.sammelUrl
+  ? T.datenschutz + KONFIG.aufbewahrung + ", Löschung jederzeit auf Zuruf."
+  : "";
+$("hoch-titel").textContent = T.hochTitel;
+$("hoch-sub").textContent = T.hochSub;
+$("fertig-sub").textContent = T.fertigSub;
+$("teilen-label").textContent = T.teilen;
+$("fertig-mini").textContent = T.fertigMini;
+$("danke-sub").textContent = T.dankeSub;
+if(KONFIG.fotoUrl){ const f=$("foto"); f.style.backgroundImage="url('"+KONFIG.fotoUrl+"')"; f.textContent=""; f.classList.add("frei"); }
+
+function zeige(id){ document.querySelectorAll(".schritt").forEach(s=>s.classList.remove("aktiv")); $(id).classList.add("aktiv"); window.scrollTo(0,0); }
+
+// Herr/Frau-Auswahl (nur Sie-Modus)
+if(!DU){
+  $("anrede-wahl").style.display="flex";
+  $("anrede-wahl").querySelectorAll(".chip").forEach(c=>{
+    c.onclick=()=>{
+      $("anrede-wahl").querySelectorAll(".chip").forEach(x=>x.classList.remove("an","fehlt"));
+      c.classList.add("an"); anrede=c.dataset.anrede;
+      $("name-hinweis").classList.remove("an");
+    };
+  });
+}
+
+// Ersten Buchstaben groß — auch nach Leerzeichen und Bindestrich ("anna-lena mueller" -> "Anna-Lena Mueller").
+// Bereits großgeschriebene Stellen bleiben unangetastet (McDonald bleibt McDonald).
+function grossAnfang(s){
+  return s.replace(/(^|[\s\-'])(\p{Ll})/gu, (_,vor,buchstabe)=>vor+buchstabe.toUpperCase());
+}
+
+// Großschreibung schon beim Tippen — Cursor bleibt, wo er ist
+$("name-input").addEventListener("input", e=>{
+  const pos = e.target.selectionStart;
+  const neu = grossAnfang(e.target.value);
+  if(neu !== e.target.value){ e.target.value = neu; e.target.setSelectionRange(pos,pos); }
+  $("name-hinweis").classList.remove("an");
+  e.target.style.borderColor="";
+});
+
+function meckern(text){
+  $("name-hinweis").textContent = text;
+  $("name-hinweis").classList.add("an");
+}
+
+// Schritt 0 -> 1
+$("btn-name-weiter").onclick=()=>{
+  // Im Sie-Modus ist Herr/Frau Pflicht — sonst stünde da "Guten Tag, Schmitz"
+  if(!DU && !anrede){
+    meckern("Bitte wählen Sie noch Herr oder Frau.");
+    $("anrede-wahl").querySelectorAll(".chip").forEach(c=>c.classList.add("fehlt"));
+    return;
+  }
+  name = grossAnfang($("name-input").value.trim().replace(/\s+/g," "));
+  $("name-input").value = name;
+  if(!name){
+    meckern(DU ? "Bitte trag noch deinen Vornamen ein." : "Bitte tragen Sie noch Ihren Nachnamen ein.");
+    $("name-input").focus(); $("name-input").style.borderColor="var(--rot)"; return;
+  }
+  $("name-hinweis").classList.remove("an");
+  ansprache = DU ? name : ((anrede ? anrede+" " : "") + name);
+  const gruss = DU ? ("Kurze Frage, "+name+" — wie zufrieden warst du?") : ("Guten Tag, "+ansprache+" — wie zufrieden waren Sie?");
+  $("start-titel").textContent = gruss;
+  $("start-sub").textContent = T.startSub;
+  $("tief-titel").textContent = T.tiefTitel;
+  zeige("s-start");
+};
+$("name-input").addEventListener("keydown",e=>{ if(e.key==="Enter") $("btn-name-weiter").click(); });
+
+// Skala 1-10
+const skala = $("skala");
+for(let i=0;i<=10;i++){
+  const b=document.createElement("button"); b.textContent=i;
+  b.onclick=()=>{
+    bewertung=i;
+    // Sofort melden — falls der Kunde jetzt abbricht, ist die Zahl trotzdem erfasst.
+    // Beim Weiterklicken folgt eine zweite Zeile mit denselben Kennung und den Stichworten;
+    // die Auswertung nimmt pro Kennung nur die letzte.
+    melde({art:"bewertung", bewertung:i, anrede:anrede, name:name, stichworte:[]});
+    if(i>=KONFIG.positivAb){ baueChips(); zeige("s-hoch"); } else { zeige("s-tief"); }
+  };
+  skala.appendChild(b);
+}
+function baueChips(){
+  const c=$("chips"); c.innerHTML="";
+  ADJEKTIVE.forEach(a=>{
+    const el=document.createElement("div"); el.className="chip"; el.textContent=a.wort;
+    el.onclick=()=>{
+      if(gewaehlt.has(a.wort)){ gewaehlt.delete(a.wort); el.classList.remove("an"); }
+      else if(gewaehlt.size < KONFIG.maxLob){ gewaehlt.add(a.wort); el.classList.add("an"); }
+      else return;                       // Grenze erreicht — Klick läuft ins Leere
+      grenzeAnzeigen();
+    };
+    c.appendChild(el);
+  });
+  grenzeAnzeigen();
+}
+// Ist die Grenze erreicht, werden die übrigen Stichworte blass und tot.
+function grenzeAnzeigen(){
+  const voll = gewaehlt.size >= KONFIG.maxLob;
+  $("chips").querySelectorAll(".chip").forEach(el=>{
+    el.classList.toggle("aus", voll && !el.classList.contains("an"));
+  });
+}
+function wa(nummer, text){ return "https://wa.me/"+(nummer||"")+"?text="+encodeURIComponent(text); }
+
+// Feedback (unter der Grenze) -> geht in die Sammelstelle, Leon bekommt eine E-Mail.
+// Früher lief das über WhatsApp: Medienbruch, landete im Chatverlauf, nicht auswertbar.
+$("btn-feedback").onclick=()=>{
+  melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name,
+         stichworte:[], feedback:$("verbesserung").value.trim()});
+  $("danke-titel").textContent = DU ? ("Danke, "+name+"!") : ("Vielen Dank, "+ansprache+"!");
+  zeige("s-danke");
+};
+
+// ---- Texte fürs Teilen -------------------------------------------------
+// Aus den angeklickten Stichworten wird ein zusammenhängender Satz gebaut,
+// keine Aufzählung. Die Varianten werden zufällig gezogen, damit nicht jeder
+// Kunde dieselbe Nachricht verschickt (Google filtert identische Bewertungen).
+
+function zufall(liste){ return liste[Math.floor(Math.random()*liste.length)]; }
+
+// Baut aus den gewählten Stichworten eine Aufzählung: "A, B und C".
+// feld = "sagt" (WhatsApp, Verb-Form) oder "lob" (Google, Hauptwort-Form).
+// Merkt sich das Anfangswort jedes Teils und weicht sonst auf eine andere
+// Variante aus — sonst steht da "macht ... verständlich, macht ... keinen Druck".
+function baueListe(feld){
+  // Sammelt alle bedeutungstragenden Wörter (ab 5 Buchstaben) der bereits
+  // gewählten Teile und weicht auf eine andere Variante aus, sobald sich eins
+  // wiederholen würde — sonst steht da "weiß, wovon er spricht ... spricht auf Augenhöhe".
+  const inhalt = s => s.toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>4);
+  const verbraucht = new Set();
+  const teile = ADJEKTIVE.filter(a=>gewaehlt.has(a.wort)).map(a=>{
+    const frei = a[feld].filter(s=>!inhalt(s).some(w=>verbraucht.has(w)));
+    const teil = zufall(frei.length ? frei : a[feld]);
+    inhalt(teil).forEach(w=>verbraucht.add(w));
+    return teil;
+  });
+  if(!teile.length) return "";
+  if(teile.length===1) return teile[0];
+  return teile.slice(0,-1).join(", ") + " und " + teile[teile.length-1];
+}
+
+const EINSTIEG = [
+  "Hi, ich hatte gerade ein sehr gutes Gespräch mit Leon Windolf",
+  "Hi, ich hatte gerade ein wirklich angenehmes Gespräch mit Leon Windolf",
+  "Hi, ich komme gerade von einem Termin bei Leon Windolf",
+  "Hi, ich hatte heute einen Termin bei Leon Windolf",
+  "Hi, ich war heute bei Leon Windolf"
+];
+const ABSCHLUSS = [
+  "Kann ich wirklich weiterempfehlen.",
+  "Eine klare Empfehlung.",
+  "Kann ich dir sehr empfehlen.",
+  "Kann ich dir wirklich ans Herz legen.",
+  "Absolut empfehlenswert.",
+  "Von mir eine klare Weiterempfehlung."
+];
+// Der Empfänger kennt Leon nicht und weiß sonst nicht, worum es überhaupt geht.
+// BEWUSST NICHT "Versicherungen/Vorsorge/Verträge" — das ruft sofort das Bild
+// vom Vertreter auf, der etwas verkaufen will, und genau da soll Leon raus.
+// Stattdessen: Thema Geld + jemand, der gute Tipps hat. Breit genug für jeden,
+// egal ob Azubi oder Familie. "Finanzcoach" ist die DVAG-konforme Bezeichnung.
+const WAS_ER_MACHT = [
+  "Bei ihm geht es um alles rund um das Thema Finanzen — und er hat sehr gute Tipps.",
+  "Er ist Finanzcoach — alles rund um Finanzen, dazu wirklich hilfreiche Tipps.",
+  "Er beschäftigt sich mit allen Fragen rund um das Thema Geld und gibt sehr wertvolle Hinweise.",
+  "Es geht um alles, was Finanzen betrifft — mit Tipps, auf die man selbst nicht kommt."
+];
+const AUSKLANG = [
+  "Falls dich das auch interessiert, schau gern hier: ",
+  "Wenn du magst, schau es dir an: ",
+  "Falls du da auch einmal draufschauen lassen möchtest: ",
+  "Mehr dazu findest du hier: "
+];
+
+function friendText(){
+  // Am Link hängen zwei Dinge:
+  //   e=   die Kennung — dadurch sieht Leon, wessen Empfehlung eine Anfrage ausgelöst hat
+  //   von= der Name, damit die Landingpage "weiterempfohlen von …" anzeigen kann
+  // Der Name ist vertretbar: Der Empfänger sieht in WhatsApp ohnehin, von wem die
+  // Nachricht kommt. Im Sie-Modus wird die Anrede mitgegeben ("Herr Schmitz").
+  const link = KONFIG.empfehlungsseiteUrl
+             ? KONFIG.empfehlungsseiteUrl + (KONFIG.empfehlungsseiteUrl.includes("?") ? "&" : "?")
+               + "e=" + kennung + "&von=" + encodeURIComponent(ansprache || name)
+             : "[Link zu Leons Seite]";
+  const lob = baueListe("sagt");
+  // Lob hängt hinter der Tätigkeit, deshalb ohne "er" und groß — sonst
+  // stünde zweimal "Er ..." hintereinander.
+  const lobSatz = lob ? " " + lob.charAt(0).toUpperCase() + lob.slice(1) + "." : "";
+  return zufall(EINSTIEG) + ". " + zufall(WAS_ER_MACHT) + lobSatz + " " +
+         zufall(ABSCHLUSS) + " " + zufall(AUSKLANG) + link;
+}
+// Google-Bewertung: Hauptwort-Stil, so wie echte Bewertungen klingen.
+const G_START = [
+  "Top Beratung bei Leon Windolf!",
+  "Sehr gute Beratung bei Leon Windolf!",
+  "Rundum gelungene Beratung bei Leon Windolf!",
+  "Wirklich gute Erfahrung bei Leon Windolf!",
+  "Sehr empfehlenswerte Beratung bei Leon Windolf!"
+];
+// Alle Varianten müssen auf "mit" enden — die Lob-Bausteine stehen im Dativ.
+const G_MITTE = ["Leon überzeugt mit ","Er überzeugt mit ","Er punktet mit ","Überzeugt hat er mich mit "];
+const G_SCHLUSS = [
+  "Fühle mich gut aufgehoben und kann ihn wärmstens empfehlen.",
+  "Fühle mich bestens beraten und kann ihn nur weiterempfehlen.",
+  "Bin sehr zufrieden und empfehle ihn gerne weiter.",
+  "Gerne wieder — klare Empfehlung.",
+  "Von mir eine klare Weiterempfehlung."
+];
+function googleText(){
+  const liste = baueListe("lob");
+  return zufall(G_START) + (liste ? " " + zufall(G_MITTE) + liste + "." : "") + " " + zufall(G_SCHLUSS);
+}
+$("btn-text-erstellen").onclick=()=>{
+  // Zweite Meldung mit denselben Kennung, jetzt mit den Stichworten.
+  melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name, stichworte:[...gewaehlt]});
+  $("empf-text").value = friendText();
+  $("btn-google").style.display = KONFIG.googleReviewUrl ? "flex" : "none";
+  zeige("s-fertig");
+};
+// melde() steht VOR window.open — sonst wertet der Browser das Fenster als Popup und blockiert es.
+$("btn-teilen").addEventListener("click", e=>{
+  e.preventDefault();
+  melde({art:"geteilt", weg:"whatsapp"});
+  window.open(wa("", $("empf-text").value), "_blank");
+});
+$("btn-google").addEventListener("click", e=>{
+  e.preventDefault();
+  melde({art:"geteilt", weg:"google"});
+  try{ navigator.clipboard.writeText(googleText()); }catch(err){}
+  window.open(KONFIG.googleReviewUrl, "_blank");
+});
+$("btn-kopieren").onclick=()=>{
+  $("empf-text").select();
+  try{ navigator.clipboard.writeText($("empf-text").value); }catch(e){ document.execCommand("copy"); }
+  $("btn-kopieren").textContent="✓ Kopiert";
+  setTimeout(()=>$("btn-kopieren").textContent="Text kopieren",1600);
+};
+</script>
+</body>
+</html>
