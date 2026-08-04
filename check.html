@@ -408,47 +408,27 @@ function baueListe(feld){
   return teile.slice(0,-1).join(", ") + " und " + teile[teile.length-1];
 }
 
+// Kurz halten (Entscheidung Leon 04.08.2026): Eine Nachricht mit fünf Saetzen liest
+// sich wie Werbung, und genau davon lebt eine Empfehlung nicht. Drei Saetze reichen —
+// Einstieg mit Rolle, die vom Kunden gewaehlten Staerken, der Grund fuers Kostenlose.
+// Alles Weitere (30 Minuten, 0 EUR, was drin ist) steht auf der Landingpage.
+// "Finanzcoach" gehoert in den Einstieg, sonst weiss der Empfaenger nicht, worum es geht.
 const EINSTIEG = [
-  "Hi, ich hatte gerade ein sehr gutes Gespräch mit Leon Windolf",
-  "Hi, ich hatte gerade ein wirklich angenehmes Gespräch mit Leon Windolf",
-  "Hi, ich komme gerade von einem Termin bei Leon Windolf",
-  "Hi, ich hatte heute einen Termin bei Leon Windolf",
-  "Hi, ich war heute bei Leon Windolf"
+  "Hi, ich hatte gerade ein sehr gutes Gespräch mit Leon Windolf, Finanzcoach",
+  "Hi, ich komme gerade von einem Termin bei Leon Windolf, Finanzcoach",
+  "Hi, ich hatte heute einen Termin bei Leon Windolf, Finanzcoach",
+  "Hi, ich war heute bei Leon Windolf, Finanzcoach"
 ];
-const ABSCHLUSS = [
-  "Kann ich wirklich weiterempfehlen.",
-  "Eine klare Empfehlung.",
-  "Kann ich dir sehr empfehlen.",
-  "Kann ich dir wirklich ans Herz legen.",
-  "Absolut empfehlenswert.",
-  "Von mir eine klare Weiterempfehlung."
-];
-// Der Empfänger kennt Leon nicht und weiß sonst nicht, worum es überhaupt geht.
-// BEWUSST NICHT "Versicherungen/Vorsorge/Verträge" — das ruft sofort das Bild
-// vom Vertreter auf, der etwas verkaufen will, und genau da soll Leon raus.
-// Stattdessen: Thema Geld + jemand, der gute Tipps hat. Breit genug für jeden,
-// egal ob Azubi oder Familie. "Finanzcoach" ist die DVAG-konforme Bezeichnung.
-const WAS_ER_MACHT = [
-  "Bei ihm geht es um alles rund um das Thema Finanzen — und er hat sehr gute Tipps.",
-  "Er ist Finanzcoach — alles rund um Finanzen, dazu wirklich hilfreiche Tipps.",
-  "Er beschäftigt sich mit allen Fragen rund um das Thema Geld und gibt sehr wertvolle Hinweise.",
-  "Es geht um alles, was Finanzen betrifft — mit Tipps, auf die man selbst nicht kommt."
-];
-// Der Empfänger soll wissen, WARUM sich der Klick lohnt — sonst ist der Link nur
-// ein Name. Bewusst NICHT "Gutschein" o. Ä.: Das klingt nach geldwerter Zuwendung,
-// und die wäre nach § 48b VAG unzulässig. Es ist Leons eigene kostenlose Leistung,
-// genau so wird sie benannt.
+// Letzter Satz: der Grund fuers Kostenlose plus der Link. Bewusst NICHT "Gutschein"
+// o. Ae. — das klingt nach geldwerter Zuwendung, die waere nach § 48b VAG unzulaessig.
+// Es ist Leons eigene kostenlose Leistung, genau so wird sie benannt.
+// Ebenfalls bewusst NICHT "Versicherungen/Vorsorge/Vertraege": Das ruft sofort das
+// Bild vom Vertreter auf, der etwas verkaufen will, und genau da soll Leon raus.
 const MEHRWERT = [
-  "Weil ich dich empfehle, ist ein Finanz-Check für dich kostenlos: 30 Minuten, in denen du siehst, wo du unnötig zahlst — verpflichtet bist du zu nichts.",
-  "Er arbeitet über Empfehlungen statt über Werbung. Deshalb gibt es für dich einen kostenlosen Finanz-Check: 30 Minuten Überblick, ohne Verpflichtung.",
-  "Für Empfohlene ist ein Finanz-Check kostenlos: In 30 Minuten weißt du, wo du stehst und was sich sparen lässt — unverbindlich.",
-  "Über den Link bekommst du einen kostenlosen Finanz-Check: 30 Minuten, ein ehrlicher Blick auf deine Zahlen, keine Verpflichtung."
-];
-const AUSKLANG = [
-  "Falls dich das auch interessiert, schau gern hier: ",
-  "Wenn du magst, schau es dir an: ",
-  "Falls du da auch einmal draufschauen lassen möchtest: ",
-  "Mehr dazu findest du hier: "
+  "Für Empfohlene ist ein Termin bei ihm kostenlos — deshalb schick ich dir den Link: ",
+  "Er arbeitet über Empfehlungen statt über Werbung, für dich wäre der erste Termin gratis: ",
+  "Empfohlene bekommen bei ihm einen kostenlosen Finanz-Check, schau gern rein: ",
+  "Weil ich dich empfehle, ist ein Finanz-Check für dich kostenlos: "
 ];
 
 function friendText(){
@@ -461,12 +441,11 @@ function friendText(){
              ? KONFIG.empfehlungsseiteUrl + (KONFIG.empfehlungsseiteUrl.includes("?") ? "&" : "?")
                + "e=" + kennung + "&von=" + encodeURIComponent(ansprache || name)
              : "[Link zu Leons Seite]";
+  // Die vom Kunden gewaehlten Staerken sind das Herz der Nachricht — sie bleiben drin.
+  // Gross geschrieben und ohne "er", weil der Einstieg schon mit Leons Namen endet.
   const lob = baueListe("sagt");
-  // Lob hängt hinter der Tätigkeit, deshalb ohne "er" und groß — sonst
-  // stünde zweimal "Er ..." hintereinander.
   const lobSatz = lob ? " " + lob.charAt(0).toUpperCase() + lob.slice(1) + "." : "";
-  return zufall(EINSTIEG) + ". " + zufall(WAS_ER_MACHT) + lobSatz + " " +
-         zufall(ABSCHLUSS) + " " + zufall(MEHRWERT) + " " + zufall(AUSKLANG) + link;
+  return zufall(EINSTIEG) + "." + lobSatz + " " + zufall(MEHRWERT) + link;
 }
 // Google-Bewertung: Hauptwort-Stil, so wie echte Bewertungen klingen.
 const G_START = [
