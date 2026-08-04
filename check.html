@@ -238,7 +238,7 @@ const T = DU ? {
   tiefMini:"Deine Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Mega, freut mich!", hochSub:"Was hat dir besonders gefallen? (bis zu 3)",
   fertigSub:"Aus deiner Auswahl zusammengestellt. Gern anpassen — und unverbindlich weiterleiten.",
-  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Du wählst selbst, wohin die Nachricht geht.",
+  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Über deinen Link ist der Finanz-Check für den Empfänger kostenlos. Du wählst, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass du dir die Zeit genommen hast.",
   datenschutz:"Deine Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
 } : {
@@ -250,7 +250,7 @@ const T = DU ? {
   tiefMini:"Ihre Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Klasse, das freut mich!", hochSub:"Was hat Ihnen besonders gefallen? (bis zu 3)",
   fertigSub:"Aus Ihrer Auswahl zusammengestellt. Gern anpassen — und unverbindlich weiterleiten.",
-  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Sie wählen selbst, wohin die Nachricht geht.",
+  teilen:"Weiterleiten zu WhatsApp", fertigMini:"Über Ihren Link ist der Finanz-Check für den Empfänger kostenlos. Sie wählen, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass Sie sich die Zeit genommen haben.",
   datenschutz:"Ihre Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
 };
@@ -434,6 +434,16 @@ const WAS_ER_MACHT = [
   "Er beschäftigt sich mit allen Fragen rund um das Thema Geld und gibt sehr wertvolle Hinweise.",
   "Es geht um alles, was Finanzen betrifft — mit Tipps, auf die man selbst nicht kommt."
 ];
+// Der Empfänger soll wissen, WARUM sich der Klick lohnt — sonst ist der Link nur
+// ein Name. Bewusst NICHT "Gutschein" o. Ä.: Das klingt nach geldwerter Zuwendung,
+// und die wäre nach § 48b VAG unzulässig. Es ist Leons eigene kostenlose Leistung,
+// genau so wird sie benannt.
+const MEHRWERT = [
+  "Über den Link ist der erste Termin bei ihm kostenlos — 30 Minuten, ganz unverbindlich.",
+  "Wer über den Link kommt, bekommt seinen Finanz-Check kostenlos — 30 Minuten, unverbindlich.",
+  "Über den Link gibt es seinen Finanz-Check gratis dazu — 30 Minuten, ohne Verpflichtung.",
+  "Für Empfohlene ist sein Finanz-Check kostenlos — 30 Minuten, unverbindlich."
+];
 const AUSKLANG = [
   "Falls dich das auch interessiert, schau gern hier: ",
   "Wenn du magst, schau es dir an: ",
@@ -456,7 +466,7 @@ function friendText(){
   // stünde zweimal "Er ..." hintereinander.
   const lobSatz = lob ? " " + lob.charAt(0).toUpperCase() + lob.slice(1) + "." : "";
   return zufall(EINSTIEG) + ". " + zufall(WAS_ER_MACHT) + lobSatz + " " +
-         zufall(ABSCHLUSS) + " " + zufall(AUSKLANG) + link;
+         zufall(ABSCHLUSS) + " " + zufall(MEHRWERT) + " " + zufall(AUSKLANG) + link;
 }
 // Google-Bewertung: Hauptwort-Stil, so wie echte Bewertungen klingen.
 const G_START = [
