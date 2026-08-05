@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Einen Moment …</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#faf6ec;color:#000;
+       font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:center}
+  .kasten{padding:28px;max-width:420px}
+  h1{font-size:20px;margin:0 0 10px}
+  p{font-size:15px;color:#4a4a4a;line-height:1.55;margin:0 0 18px}
+  a{display:inline-block;background:#c8a34a;color:#000;text-decoration:none;
+    font-weight:700;padding:13px 22px;border-radius:12px}
+</style>
+</head>
+<body>
+
+<div class="kasten" id="kasten" style="visibility:hidden">
+  <h1>Diese Seite gibt es nicht</h1>
+  <p>Der Link ist vermutlich unvollständig kopiert worden.</p>
+  <a href="/">Zur Startseite</a>
+</div>
+
+<script>
+/* Empfehlungslinks sehen aus wie "…/herr-schmitz-8opmd" statt "…/?von=…&e=…" —
+   das liest sich in WhatsApp wie eine Seite und nicht wie Technik. GitHub Pages
+   kennt diese Adressen nicht und liefert deshalb diese Datei aus. Hier wird der
+   Pfad wieder in seine zwei Teile zerlegt und an die Startseite übergeben.
+
+   Aufbau des letzten Pfadstücks:  name-teile … + "-" + Kennung (5 Zeichen a-z0-9)
+   Die Kennung ist das letzte Stück, alles davor ist der Name.
+
+   Passt der Pfad nicht auf dieses Muster, ist es ein echter Tippfehler — dann
+   bleibt die Meldung oben stehen, statt jemanden mit Unsinn im Namen zu begrüßen.
+
+   Schönheitsfehler in Kauf genommen: Ein Doppelname ("Müller-Lüdenscheidt") kommt
+   als "Mueller Luedenscheidt" zurück. Ein Bindestrich im Pfad ist nicht davon zu
+   unterscheiden, ob er ein Leerzeichen oder einen echten Bindestrich ersetzt hat. */
+(function(){
+  var letztes = location.pathname.replace(/\/+$/,"").split("/").pop();
+  var treffer = /^(?:(.+)-)?([a-z0-9]{5})$/.exec(letztes || "");
+
+  if(!treffer){
+    document.getElementById("kasten").style.visibility = "visible";
+    return;
+  }
+
+  // "herr-schmitz" -> "Herr Schmitz". Nur Buchstaben/Ziffern bleiben stehen,
+  // damit aus dem Pfad nichts anderes in die Seite getragen werden kann.
+  var von = (treffer[1] || "")
+    .replace(/[^a-z0-9-]/g,"")
+    .split("-").filter(Boolean)
+    .map(function(w){ return w.charAt(0).toUpperCase() + w.slice(1); })
+    .join(" ");
+
+  location.replace("/?von=" + encodeURIComponent(von) + "&e=" + encodeURIComponent(treffer[2]));
+})();
+</script>
+
+</body>
+</html>

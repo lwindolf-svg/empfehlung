@@ -58,8 +58,13 @@
   .btn.google{background:#fff;color:#1a1a1a;border:1.5px solid var(--linie)}
   .btn.gold{background:var(--gold);color:var(--text)}
   .btn.gold:hover{background:var(--gold-dunkel)}
-  .btn.geist{background:#fff;color:var(--schwach);border:1.5px solid var(--linie);box-shadow:none;font-weight:600;font-size:14px;padding:11px}
+  /* Gleiche Masse wie der gruene Knopf (Wunsch Leon 05.08.2026). Nur das
+     Schriftgewicht bleibt leichter, damit das Weiterleiten der Hauptweg bleibt. */
+  .btn.geist{background:#fff;color:var(--schwach);border:1.5px solid var(--linie);box-shadow:none;font-weight:600}
   .mini{font-size:12.5px;color:var(--schwach);text-align:center;margin-top:12px}
+  /* Der Nutzen fuer den Empfaenger ist das Verkaufsargument beim Weiterleiten —
+     darf nicht als Kleingedrucktes untergehen. */
+  #fertig-mini{font-size:14px;font-weight:600;color:var(--text);line-height:1.5;margin:14px 0 16px}
   .datenschutz{font-size:11.5px;line-height:1.45;opacity:.85}
   .hinweis{display:none;color:var(--rot);font-size:13.5px;font-weight:600;text-align:center;margin-top:10px}
   .hinweis.an{display:block}
@@ -123,6 +128,8 @@
     <h1>Fertig</h1>
     <p class="sub" id="fertig-sub"></p>
     <div class="box"><textarea id="empf-text"></textarea></div>
+    <!-- Steht bewusst VOR den Knoepfen: erst der Nutzen, dann der Klick. -->
+    <div class="mini" id="fertig-mini"></div>
     <a class="btn google" id="btn-google" href="#" target="_blank" style="display:none">Als Google-Bewertung veröffentlichen</a>
     <!-- KEIN target="_blank": Auf dem Handy oeffnet der Browser sonst erst einen neuen
          Tab und blockiert dort haeufig den Sprung in die WhatsApp-App. Im selben Fenster
@@ -132,7 +139,6 @@
       <span id="teilen-label">Weiterleiten</span>
     </a>
     <button class="btn geist" id="btn-kopieren">Text kopieren</button>
-    <div class="mini" id="fertig-mini"></div>
   </div>
 
   <!-- SCHRITT 4: Danke -->
@@ -433,22 +439,40 @@ const EINSTIEG = [
 // Es ist Leons eigene kostenlose Leistung, genau so wird sie benannt.
 // Ebenfalls bewusst NICHT "Versicherungen/Vorsorge/Vertraege": Das ruft sofort das
 // Bild vom Vertreter auf, der etwas verkaufen will, und genau da soll Leon raus.
+// Reihenfolge im Satz ist Absicht (Leon 05.08.2026): erst die Empfehlung, dann der
+// Check. "Kostenlos" am Satzanfang ruft sofort den Vertreter auf, der etwas verkaufen
+// will. Vorne steht deshalb, dass der Weg ueber den Empfehler laeuft — das dreht die
+// Richtung um: nicht "bitte komm", sondern "du kommst rein".
 const MEHRWERT = [
-  "Für Empfohlene ist ein Termin bei ihm kostenlos, deshalb schick ich dir den Link: ",
-  "Neue Kunden kommen bei ihm nur über Empfehlungen, für dich wäre der erste Termin gratis: ",
-  "Empfohlene bekommen bei ihm einen kostenlosen Finanz-Check, schau gern rein: ",
-  "Weil ich dich empfehle, ist ein Finanz-Check für dich kostenlos: "
+  "Er nimmt neue Leute nur auf Empfehlung, über mich bekommst du einen kostenlosen Finanz-Check: ",
+  "Ich kann dich bei ihm empfehlen, dann ist der Finanz-Check für dich kostenlos: ",
+  "Falls du magst, über meine Empfehlung ist der Finanz-Check für dich kostenlos: ",
+  "Empfohlene bekommen bei ihm einen kostenlosen Finanz-Check, schau gern rein: "
 ];
 
+// Macht aus "Herr Schmitz" das Pfadstück "herr-schmitz-". Umlaute werden
+// umgeschrieben, weil sie in einer Adresse sonst als %C3%BC auftauchen — genau das
+// Kauderwelsch, das hier wegsoll. Bleibt nichts Brauchbares übrig (z. B. rein
+// chinesischer Name), fällt das Stück weg und der Pfad besteht nur aus der Kennung.
+function pfadName(s){
+  const stueck = (s||"").toLowerCase()
+    .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  return stueck ? stueck + "-" : "";
+}
+
 function friendText(){
-  // Am Link hängen zwei Dinge:
-  //   e=   die Kennung — dadurch sieht Leon, wessen Empfehlung eine Anfrage ausgelöst hat
-  //   von= der Name, damit die Landingpage "weiterempfohlen von …" anzeigen kann
+  // Der Link trägt zwei Dinge zur Landingpage:
+  //   der Name  — damit dort "weiterempfohlen von …" steht (stärkster Vertrauensanker)
+  //   die Kennung — dadurch sieht Leon, wessen Empfehlung eine Anfrage ausgelöst hat
+  // Beides steckt im PFAD statt in Parametern (Wunsch Leon 05.08.2026):
+  // "…/herr-schmitz-8opmd" liest sich in WhatsApp wie eine Seite, "?von=…&e=…"
+  // sieht nach Technik aus. Zerlegt wird der Pfad von der 404.html der
+  // veröffentlichten Seite — ⚠️ ohne die Datei laufen alle Links ins Leere.
   // Der Name ist vertretbar: Der Empfänger sieht in WhatsApp ohnehin, von wem die
   // Nachricht kommt. Im Sie-Modus wird die Anrede mitgegeben ("Herr Schmitz").
   const link = KONFIG.empfehlungsseiteUrl
-             ? KONFIG.empfehlungsseiteUrl + (KONFIG.empfehlungsseiteUrl.includes("?") ? "&" : "?")
-               + "e=" + kennung + "&von=" + encodeURIComponent(ansprache || name)
+             ? KONFIG.empfehlungsseiteUrl.replace(/\/?$/, "/") + pfadName(ansprache || name) + kennung
              : "[Link zu Leons Seite]";
   // Die vom Kunden gewaehlten Staerken sind das Herz der Nachricht — sie bleiben drin.
   // Mit "Er" davor, sonst klingt der Satz wie aus einem Bewertungsportal
