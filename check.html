@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wie zufrieden waren Sie? — Leon Windolf</title>
+<title>Wie zufrieden waren Sie? · Leon Windolf</title>
 <style>
   :root{
     --blau:#1b2a5b; --blau-dunkel:#101d40; --blau-hell:#f6efd9;
@@ -237,7 +237,7 @@ const T = DU ? {
   tiefTitel:"Danke für deine Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was können wir besser machen?", tiefPlatz:"Dein Verbesserungsvorschlag …",
   tiefMini:"Deine Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Mega, freut mich!", hochSub:"Was hat dir besonders gefallen? (bis zu 3)",
-  fertigSub:"Aus deiner Auswahl zusammengestellt. Gern anpassen — und unverbindlich weiterleiten.",
+  fertigSub:"Aus deiner Auswahl zusammengestellt. Gern anpassen und unverbindlich weiterleiten.",
   teilen:"Weiterleiten zu WhatsApp", fertigMini:"Über deinen Link bekommt der Empfänger einen kostenlosen Finanz-Check. Du wählst, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass du dir die Zeit genommen hast.",
   datenschutz:"Deine Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
@@ -249,7 +249,7 @@ const T = DU ? {
   tiefTitel:"Danke für Ihre Ehrlichkeit", tiefSub:"Das ist mir wichtig. Was hätte besser sein können?", tiefPlatz:"Ihr Verbesserungsvorschlag …",
   tiefMini:"Ihre Rückmeldung geht direkt und ausschließlich an Leon Windolf.",
   hochTitel:"Klasse, das freut mich!", hochSub:"Was hat Ihnen besonders gefallen? (bis zu 3)",
-  fertigSub:"Aus Ihrer Auswahl zusammengestellt. Gern anpassen — und unverbindlich weiterleiten.",
+  fertigSub:"Aus Ihrer Auswahl zusammengestellt. Gern anpassen und unverbindlich weiterleiten.",
   teilen:"Weiterleiten zu WhatsApp", fertigMini:"Über Ihren Link bekommt der Empfänger einen kostenlosen Finanz-Check. Sie wählen, wohin die Nachricht geht.",
   dankeSub:"Ich freue mich, dass Sie sich die Zeit genommen haben.",
   datenschutz:"Ihre Angaben werden zur Auswertung der Zufriedenheit gespeichert und ausschließlich von Leon Windolf verwendet. Aufbewahrung: "
@@ -326,7 +326,7 @@ $("btn-name-weiter").onclick=()=>{
   }
   $("name-hinweis").classList.remove("an");
   ansprache = DU ? name : ((anrede ? anrede+" " : "") + name);
-  const gruss = DU ? ("Kurze Frage, "+name+" — wie zufrieden warst du?") : ("Guten Tag, "+ansprache+" — wie zufrieden waren Sie?");
+  const gruss = DU ? ("Kurze Frage, "+name+": Wie zufrieden warst du?") : ("Guten Tag, "+ansprache+": Wie zufrieden waren Sie?");
   $("start-titel").textContent = gruss;
   $("start-sub").textContent = T.startSub;
   $("tief-titel").textContent = T.tiefTitel;
@@ -397,9 +397,18 @@ function baueListe(feld){
   // wiederholen würde — sonst steht da "weiß, wovon er spricht ... spricht auf Augenhöhe".
   const inhalt = s => s.toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>4);
   const verbraucht = new Set();
-  const teile = ADJEKTIVE.filter(a=>gewaehlt.has(a.wort)).map(a=>{
-    const frei = a[feld].filter(s=>!inhalt(s).some(w=>verbraucht.has(w)));
-    const teil = zufall(frei.length ? frei : a[feld]);
+  const gewaehlte = ADJEKTIVE.filter(a=>gewaehlt.has(a.wort));
+  // Bei mehreren Teilen zaehlt die Aufzaehlung schon ein "und" — Varianten, die selbst
+  // eines enthalten, ergaeben "ist ehrlich und legt alles offen und erklaert ...".
+  // Deshalb kommen die nur zum Zug, wenn keine andere uebrig bleibt.
+  const teile = gewaehlte.map(a=>{
+    let moeglich = a[feld].filter(s=>!inhalt(s).some(w=>verbraucht.has(w)));
+    if(!moeglich.length) moeglich = a[feld];
+    if(gewaehlte.length > 1){
+      const ohneUnd = moeglich.filter(s=>!/ und /.test(s));
+      if(ohneUnd.length) moeglich = ohneUnd;
+    }
+    const teil = zufall(moeglich);
     inhalt(teil).forEach(w=>verbraucht.add(w));
     return teil;
   });
@@ -425,8 +434,8 @@ const EINSTIEG = [
 // Ebenfalls bewusst NICHT "Versicherungen/Vorsorge/Vertraege": Das ruft sofort das
 // Bild vom Vertreter auf, der etwas verkaufen will, und genau da soll Leon raus.
 const MEHRWERT = [
-  "Für Empfohlene ist ein Termin bei ihm kostenlos — deshalb schick ich dir den Link: ",
-  "Er arbeitet über Empfehlungen statt über Werbung, für dich wäre der erste Termin gratis: ",
+  "Für Empfohlene ist ein Termin bei ihm kostenlos, deshalb schick ich dir den Link: ",
+  "Neue Kunden kommen bei ihm nur über Empfehlungen, für dich wäre der erste Termin gratis: ",
   "Empfohlene bekommen bei ihm einen kostenlosen Finanz-Check, schau gern rein: ",
   "Weil ich dich empfehle, ist ein Finanz-Check für dich kostenlos: "
 ];
@@ -442,9 +451,10 @@ function friendText(){
                + "e=" + kennung + "&von=" + encodeURIComponent(ansprache || name)
              : "[Link zu Leons Seite]";
   // Die vom Kunden gewaehlten Staerken sind das Herz der Nachricht — sie bleiben drin.
-  // Gross geschrieben und ohne "er", weil der Einstieg schon mit Leons Namen endet.
+  // Mit "Er" davor, sonst klingt der Satz wie aus einem Bewertungsportal
+  // ("Verfuegt ueber fundiertes Wissen, ist ehrlich ...").
   const lob = baueListe("sagt");
-  const lobSatz = lob ? " " + lob.charAt(0).toUpperCase() + lob.slice(1) + "." : "";
+  const lobSatz = lob ? " Er " + lob + "." : "";
   return zufall(EINSTIEG) + "." + lobSatz + " " + zufall(MEHRWERT) + link;
 }
 // Google-Bewertung: Hauptwort-Stil, so wie echte Bewertungen klingen.
@@ -461,7 +471,7 @@ const G_SCHLUSS = [
   "Fühle mich gut aufgehoben und kann ihn wärmstens empfehlen.",
   "Fühle mich bestens beraten und kann ihn nur weiterempfehlen.",
   "Bin sehr zufrieden und empfehle ihn gerne weiter.",
-  "Gerne wieder — klare Empfehlung.",
+  "Gerne wieder, klare Empfehlung.",
   "Von mir eine klare Weiterempfehlung."
 ];
 function googleText(){
