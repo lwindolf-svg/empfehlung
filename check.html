@@ -27,17 +27,20 @@
      Nicht "background:none" nehmen — das setzt auch background-size zurueck. */
   .kopf .foto.frei{width:70px;height:70px;background-color:#fff;border:1.5px solid var(--gold);
     background-size:auto 94%;background-position:50% 100%;background-repeat:no-repeat}
-  .kopf .n{font-weight:700}.kopf .r{font-size:13px;color:var(--schwach)}
+  .kopf .n{font-weight:700}.kopf .r{font-size:13.5px;color:var(--schwach)}
   h1{font-size:22px;text-align:center;margin:0 0 6px;line-height:1.25}
   p.sub{text-align:center;color:var(--schwach);font-size:15px;margin:0 auto 22px;max-width:360px}
   .schritt{display:none}.schritt.aktiv{display:block;animation:rein .25s ease}
   @keyframes rein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  .frage{font-size:13.5px;color:var(--schwach);text-align:center;margin-bottom:10px}
+  .frage{font-size:15px;color:var(--schwach);text-align:center;margin-bottom:10px}
   .skala{display:flex;flex-wrap:nowrap;justify-content:center;gap:4px;margin:10px 0 6px}
   .skala button{flex:1 1 0;min-width:0;height:42px;padding:0;border:1.5px solid var(--linie);background:#fff;border-radius:8px;font-size:15px;font-weight:600;
     font-weight:700;color:var(--text);cursor:pointer;transition:transform .06s,background .12s,border-color .12s}
   .skala button:hover{transform:translateY(-2px);border-color:var(--gold);background:var(--creme)}
+  /* RANGFOLGE (17.08.2026, Leons Vorgabe): Alles andere ist groesser als
+     diese Beschriftung. Einzige Ausnahme nach unten ist .datenschutz —
+     der Pflichthinweis. Wer hier etwas aendert, prueft beides. */
   .skala-enden{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;font-weight:600;
     color:var(--text);margin-top:6px}
 
@@ -64,14 +67,14 @@
   /* Gleiche Masse wie der gruene Knopf (Wunsch Leon 05.08.2026). Nur das
      Schriftgewicht bleibt leichter, damit das Weiterleiten der Hauptweg bleibt. */
   .btn.geist{background:#fff;color:var(--schwach);border:1.5px solid var(--linie);box-shadow:none;font-weight:600}
-  .mini{font-size:12.5px;color:var(--schwach);text-align:center;margin-top:12px}
+  .mini{font-size:13.5px;color:var(--schwach);text-align:center;margin-top:12px}
   /* Der Nutzen fuer den Empfaenger ist das Verkaufsargument beim Weiterleiten —
      darf nicht als Kleingedrucktes untergehen. */
   #fertig-mini{font-size:14px;font-weight:600;color:var(--text);line-height:1.5;margin:14px 0 16px}
   /* Pflichthinweis: tritt optisch zurueck, bleibt aber lesbar.
      Nicht unter 11px setzen — er muss ohne Muehe zu lesen sein. */
   .datenschutz{font-size:11px;line-height:1.45;opacity:.72}
-  .hinweis{display:none;color:var(--rot);font-size:13.5px;font-weight:600;text-align:center;margin-top:10px}
+  .hinweis{display:none;color:var(--rot);font-size:14px;font-weight:600;text-align:center;margin-top:10px}
   .hinweis.an{display:block}
   .chip.fehlt{border-color:var(--rot)}
   .box{background:var(--creme);border:1px solid var(--linie);border-radius:12px;padding:4px;margin-top:6px}
