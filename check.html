@@ -74,6 +74,22 @@
   /* Pflichthinweis: tritt optisch zurueck, bleibt aber lesbar.
      Nicht unter 11px setzen — er muss ohne Muehe zu lesen sein. */
   .datenschutz{font-size:11px;line-height:1.45;opacity:.72}
+  /* Pflichthinweis einklappbar (17.08.2026) — vier Zeilen Kleingedrucktes unter
+     der Frage haben die Seite erschlagen. Ein Klick genuegt rechtlich, wie beim
+     Impressum auf der Landingpage. ZWEI BEDINGUNGEN, die bleiben muessen:
+     (1) Die Beschriftung sagt, was drinsteht — nicht "Mehr" oder "Info".
+     (2) Der Block steht VOR der ersten Eingabe, nicht darunter.
+     Die Beschriftung bleibt ueber Skalenbeschriftungsgroesse (13px) — nur der
+     Hinweistext selbst darf kleiner sein (11px). */
+  .ds{margin-top:14px;text-align:center}
+  .ds summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    font-size:13px;color:var(--schwach);opacity:.8;list-style:none;
+    padding:5px 10px;border-radius:7px;user-select:none}
+  .ds summary::-webkit-details-marker{display:none}
+  .ds summary::after{content:"\25be";font-size:10px;transition:transform .15s}
+  .ds[open] summary::after{transform:rotate(180deg)}
+  .ds summary:hover{opacity:1;background:var(--creme)}
+  .ds .datenschutz{margin-top:4px}
   .hinweis{display:none;color:var(--rot);font-size:14px;font-weight:600;text-align:center;margin-top:10px}
   .hinweis.an{display:block}
   .chip.fehlt{border-color:var(--rot)}
@@ -101,7 +117,10 @@
     <input type="text" id="name-input" autocomplete="off" autocapitalize="words" spellcheck="false">
     <div class="hinweis" id="name-hinweis"></div>
     <button class="btn gold" id="btn-name-weiter">Weiter</button>
-    <div class="mini datenschutz" id="datenschutz-hinweis"></div>
+    <details class="ds" id="ds-1">
+      <summary>Datenschutz: was mit Ihren Angaben passiert</summary>
+      <div class="mini datenschutz" id="datenschutz-hinweis"></div>
+    </details>
   </div>
 
   <!-- SCHRITT 1: NPS -->
@@ -113,7 +132,10 @@
     <div class="skala-enden"><span>überhaupt nicht wahrscheinlich</span><span>äußerst wahrscheinlich</span></div>
     <!-- Wird nur eingeblendet, wenn der Namensschritt uebersprungen wurde (Name kam aus dem Link).
          Sonst steht der Datenschutzhinweis dort und der Kunde saehe ihn hier nie. -->
-    <div class="mini datenschutz" id="datenschutz-hinweis-2" style="display:none"></div>
+    <details class="ds" id="ds-2" style="display:none">
+      <summary>Datenschutz: was mit Ihren Angaben passiert</summary>
+      <div class="mini datenschutz" id="datenschutz-hinweis-2"></div>
+    </details>
   </div>
 
   <!-- SCHRITT 2a: Verbesserung -->
@@ -285,6 +307,8 @@ $("tief-mini").textContent = T.tiefMini;
 $("datenschutz-hinweis").textContent = KONFIG.sammelUrl
   ? T.datenschutz + KONFIG.aufbewahrung + ", Löschung jederzeit auf Zuruf."
   : "";
+// Ohne Sammelstelle wird nichts gespeichert — dann waere schon die Klappe falsch.
+$("ds-1").style.display = $("datenschutz-hinweis").textContent ? "block" : "none";
 $("hoch-titel").textContent = T.hochTitel;
 $("hoch-sub").textContent = T.hochSub;
 $("fertig-sub").textContent = T.fertigSub;
@@ -380,7 +404,7 @@ $("btn-name-weiter").onclick=()=>{
   // Der Datenschutzhinweis steht im uebersprungenen Schritt — hierher mitnehmen.
   const h2 = $("datenschutz-hinweis-2");
   h2.textContent = $("datenschutz-hinweis").textContent;
-  if(h2.textContent) h2.style.display = "block";
+  if(h2.textContent) $("ds-2").style.display = "block";
   weiterZurFrage();
 })();
 $("name-input").addEventListener("keydown",e=>{ if(e.key==="Enter") $("btn-name-weiter").click(); });
