@@ -35,10 +35,11 @@
 
   .frage{font-size:13.5px;color:var(--schwach);text-align:center;margin-bottom:10px}
   .skala{display:flex;flex-wrap:nowrap;justify-content:center;gap:4px;margin:10px 0 6px}
-  .skala button{flex:1 1 0;min-width:0;height:42px;padding:0;border:1.5px solid var(--linie);background:#fff;border-radius:8px;font-size:14px;
+  .skala button{flex:1 1 0;min-width:0;height:42px;padding:0;border:1.5px solid var(--linie);background:#fff;border-radius:8px;font-size:15px;font-weight:600;
     font-weight:700;color:var(--text);cursor:pointer;transition:transform .06s,background .12s,border-color .12s}
   .skala button:hover{transform:translateY(-2px);border-color:var(--gold);background:var(--creme)}
-  .skala-enden{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--schwach);margin-top:4px}
+  .skala-enden{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;font-weight:600;
+    color:var(--text);margin-top:6px}
 
   .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:6px 0 4px}
   .chip{border:1.5px solid var(--linie);background:#fff;border-radius:30px;padding:9px 15px;font-size:14.5px;
@@ -67,7 +68,9 @@
   /* Der Nutzen fuer den Empfaenger ist das Verkaufsargument beim Weiterleiten —
      darf nicht als Kleingedrucktes untergehen. */
   #fertig-mini{font-size:14px;font-weight:600;color:var(--text);line-height:1.5;margin:14px 0 16px}
-  .datenschutz{font-size:11.5px;line-height:1.45;opacity:.85}
+  /* Pflichthinweis: tritt optisch zurueck, bleibt aber lesbar.
+     Nicht unter 11px setzen — er muss ohne Muehe zu lesen sein. */
+  .datenschutz{font-size:11px;line-height:1.45;opacity:.72}
   .hinweis{display:none;color:var(--rot);font-size:13.5px;font-weight:600;text-align:center;margin-top:10px}
   .hinweis.an{display:block}
   .chip.fehlt{border-color:var(--rot)}
