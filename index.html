@@ -570,9 +570,31 @@ document.getElementById("wa-oben").href =
   pruefe();
 })();
 
+// Anfangsbuchstaben automatisch gross — beim Tippen und noch einmal beim Absenden.
+// WARUM: Der Name geht ungeprueft in die Tabelle, ins Cockpit und in Leons
+// WhatsApp-Nachricht. "max mustermann" steht dort sonst dauerhaft klein.
+// Auch nach Leerzeichen und Bindestrich (Anna-Lena, von Weizsaecker).
+// Bereits Grossgeschriebenes bleibt unangetastet (McDonald bleibt McDonald).
+function grossAnfang(s){
+  return s.replace(/(^|[\s\-'])(\p{Ll})/gu, (_,vor,buchstabe)=>vor+buchstabe.toUpperCase());
+}
+(function(){
+  const feld = document.querySelector('#anfrage input[name="name"]');
+  if(!feld) return;
+  feld.setAttribute("autocapitalize","words");   // Handy-Tastatur zieht mit
+  feld.addEventListener("input", e=>{
+    // Schreibmarke merken, sonst springt sie beim Ersetzen ans Ende.
+    const pos = e.target.selectionStart;
+    const neu = grossAnfang(e.target.value);
+    if(neu !== e.target.value){ e.target.value = neu; e.target.setSelectionRange(pos,pos); }
+  });
+})();
+
 document.getElementById("anfrage").addEventListener("submit", function(e){
   e.preventDefault();
   const d = new FormData(this);
+  // Sicherheitsnetz: Einfuegen per Maus oder Autofill loest kein "input" aus.
+  d.set("name", grossAnfang((d.get("name")||"").trim().replace(/\s+/g," ")));
 
   // Erst melden, dann WhatsApp öffnen — umgekehrt blockiert der Browser das Fenster.
   // Doppelter Weg mit Absicht: Auch wenn die WhatsApp-Nachricht nie abgeschickt wird,
