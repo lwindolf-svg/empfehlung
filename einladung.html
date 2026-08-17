@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Einladung vorbereiten</title>
+<!--
+  ============================================================================
+  NUR FÜR LEON — nicht für Kunden.
+  Erzeugt einen Zufriedenheits-Check mit bereits eingetragenem Namen.
+
+  WARUM: Trägt der Kunde seinen Namen selbst ein, kann er sich vertippen
+  (Autokorrektur auf dem Handy!). Der Name läuft danach durch den ganzen
+  Ablauf — Ansprache, Auswertung und vor allem den geteilten Empfehlungslink
+  ("weiterempfohlen von …"), den ein Fremder liest. Dort ist der Fehler nicht
+  mehr korrigierbar. Deshalb gibt Leon den Namen vorher ein.
+
+  Die Seite speichert nichts und schickt nichts irgendwohin.
+  Der QR-Code entsteht im Browser (qrcode.js liegt daneben), ohne Internet.
+  ============================================================================
+-->
+<style>
+  :root{
+    --blau:#1b2a5b; --blau-dunkel:#101d40; --blau-hell:#f6efd9;
+    --text:#000; --schwach:#4a4a4a; --linie:#e8e2d0;
+    --gruen:#25d366; --rot:#d64545; --gold:#c2a24d; --gold-dunkel:#a3822f;
+    --schatten:0 2px 8px rgba(40,30,10,.08),0 12px 34px rgba(40,30,10,.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:22px 16px 48px;background:var(--blau-hell);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto}
+  .karte{background:#fff;border:1px solid var(--linie);border-top:3px solid var(--gold);
+    border-radius:14px;padding:22px 20px;box-shadow:var(--schatten);margin-bottom:18px}
+  h1{font-size:22px;margin:0 0 4px;color:var(--blau)}
+  .sub{color:var(--schwach);font-size:14px;margin:0 0 20px}
+  label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}
+  input[type=text]{width:100%;padding:12px 13px;font-size:16px;font-family:inherit;
+    border:1px solid var(--linie);border-radius:9px;background:#fff}
+  input[type=text]:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--linie);background:#fff;border-radius:999px;
+    padding:9px 16px;font-size:15px;cursor:pointer;user-select:none}
+  .chip.an{background:var(--blau);color:#fff;border-color:var(--blau)}
+  .chip.fehlt{border-color:var(--rot)}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    border:0;border-radius:10px;padding:14px 16px;font-size:16px;font-weight:600;
+    font-family:inherit;cursor:pointer;margin-top:10px;text-decoration:none}
+  .btn.gold{background:var(--gold);color:#1a1400}
+  .btn.gold:hover{background:var(--gold-dunkel)}
+  .btn.wa{background:var(--gruen);color:#04310f}
+  .btn.still{background:#fff;color:var(--blau);border:1px solid var(--linie)}
+  .hinweis{color:var(--rot);font-size:14px;margin-top:8px;display:none}
+  .hinweis.an{display:block}
+  #ergebnis{display:none}
+  .qr{display:flex;justify-content:center;padding:18px 0 6px}
+  .qr img{width:min(300px,72vw);height:auto;image-rendering:pixelated;
+    border:10px solid #fff;border-radius:8px;box-shadow:var(--schatten)}
+  .linkfeld{width:100%;font-size:13px;padding:11px 12px;border:1px solid var(--linie);
+    border-radius:8px;background:#faf8f2;color:var(--schwach);word-break:break-all;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  .vorschau{background:var(--blau-hell);border-left:3px solid var(--gold);
+    padding:12px 14px;border-radius:0 8px 8px 0;margin:16px 0 4px;font-size:15px}
+  .vorschau b{color:var(--blau)}
+  .mini{font-size:12.5px;color:var(--schwach);margin-top:10px}
+  .warn{background:#fff6d8;border-radius:8px;padding:11px 13px;font-size:13px;
+    color:#7a5b00;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="karte">
+    <h1>Einladung vorbereiten</h1>
+    <p class="sub">Name eintragen, fertigen Link oder QR-Code an den Kunden geben.
+      So kann sich niemand mehr vertippen.</p>
+
+    <label>Wie sprichst du die Person an?</label>
+    <div class="chips" id="modus-wahl">
+      <div class="chip an" data-modus="sie-herr">Sie · Herr</div>
+      <div class="chip" data-modus="sie-frau">Sie · Frau</div>
+      <div class="chip" data-modus="du">Du</div>
+    </div>
+
+    <label for="name" id="name-label">Nachname</label>
+    <input type="text" id="name" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Schmitz">
+    <div class="hinweis" id="hinweis"></div>
+
+    <button class="btn gold" id="btn-erzeugen">Link und QR-Code erzeugen</button>
+  </div>
+
+  <div class="karte" id="ergebnis">
+    <div class="vorschau" id="vorschau"></div>
+    <div class="qr"><img id="qr-bild" alt="QR-Code zum Zufriedenheits-Check"></div>
+    <div class="mini" style="text-align:center;margin-top:0">Zum Abscannen hinhalten — oder den Link schicken.</div>
+
+    <label>Der Link</label>
+    <div class="linkfeld" id="linkfeld"></div>
+
+    <a class="btn wa" id="btn-teilen" href="#">Link verschicken</a>
+    <button class="btn still" id="btn-kopieren">Link kopieren</button>
+    <button class="btn still" id="btn-neu">Nächster Kunde</button>
+
+    <div class="warn">
+      Der Name steht sichtbar im Link. Schick ihn nur an genau diese Person.
+    </div>
+  </div>
+
+</div>
+
+<script src="qrcode.js"></script>
+<script>
+/* ============ HIER ANPASSEN ============ */
+const KONFIG = {
+  // Adresse der Check-Seite. Muss oeffentlich erreichbar sein, sonst kann der
+  // Kunde den QR-Code nicht oeffnen.
+  checkUrl: "https://leon-windolf-finanzcoach.de/check.html",
+  fehlerkorrektur: "H"   // H = hoechste Stufe, bleibt auch gedruckt/geknickt lesbar
+};
+/* ======================================= */
+
+const $ = id => document.getElementById(id);
+let modus = "sie-herr";
+
+// Ersten Buchstaben gross — auch nach Leerzeichen und Bindestrich.
+// Bereits Grossgeschriebenes bleibt (McDonald bleibt McDonald).
+function grossAnfang(s){
+  return s.replace(/(^|[\s\-'])(\p{Ll})/gu, (_,vor,b)=>vor+b.toUpperCase());
+}
+
+$("modus-wahl").querySelectorAll(".chip").forEach(c=>{
+  c.onclick = () => {
+    $("modus-wahl").querySelectorAll(".chip").forEach(x=>x.classList.remove("an"));
+    c.classList.add("an");
+    modus = c.dataset.modus;
+    const du = modus === "du";
+    $("name-label").textContent = du ? "Vorname" : "Nachname";
+    $("name").placeholder = du ? "Max" : "Schmitz";
+    $("ergebnis").style.display = "none";
+  };
+});
+
+$("name").addEventListener("input", e=>{
+  const pos = e.target.selectionStart;
+  const neu = grossAnfang(e.target.value);
+  if(neu !== e.target.value){ e.target.value = neu; e.target.setSelectionRange(pos,pos); }
+  $("hinweis").classList.remove("an");
+});
+$("name").addEventListener("keydown", e=>{ if(e.key==="Enter") $("btn-erzeugen").click(); });
+
+function baueLink(name){
+  const p = new URLSearchParams();
+  if(modus === "du"){ p.set("form","du"); }
+  else { p.set("form","sie"); p.set("a", modus === "sie-frau" ? "Frau" : "Herr"); }
+  p.set("n", name);
+  return KONFIG.checkUrl + "?" + p.toString();
+}
+
+// QR als Bild. qrcode.js erzeugt das PNG selbst — kein Internet, kein fremder Dienst.
+function zeigeQr(text){
+  const qr = qrcode(0, KONFIG.fehlerkorrektur);   // 0 = Groesse automatisch
+  qr.addData(text);
+  qr.make();
+  $("qr-bild").src = qr.createDataURL(8, 4);      // 8 px je Modul, 4 Module Rand
+}
+
+$("btn-erzeugen").onclick = () => {
+  const name = grossAnfang($("name").value.trim().replace(/\s+/g," "));
+  $("name").value = name;
+  if(!name){
+    $("hinweis").textContent = "Bitte trag noch den Namen ein.";
+    $("hinweis").classList.add("an");
+    $("name").focus();
+    return;
+  }
+  const link = baueLink(name);
+  const anrede = modus === "du" ? name
+               : (modus === "sie-frau" ? "Frau " : "Herr ") + name;
+  $("vorschau").innerHTML = modus === "du"
+    ? 'Der Kunde sieht: <b>„Kurze Frage, ' + anrede + ': Wie zufrieden warst du?"</b>'
+    : 'Der Kunde sieht: <b>„Guten Tag, ' + anrede + ': Wie zufrieden waren Sie?"</b>';
+  $("linkfeld").textContent = link;
+  zeigeQr(link);
+
+  // Adresse VOR dem Klick setzen, kein window.open — Handys blockieren das als Popup.
+  const nachricht = (modus === "du" ? "Hi " : "Guten Tag ") + anrede +
+    ", hier ist der kurze Rückmelde-Link, den ich angekündigt hatte: " + link;
+  $("btn-teilen").href = "https://wa.me/?text=" + encodeURIComponent(nachricht);
+  $("btn-teilen").dataset.nachricht = nachricht;
+
+  $("ergebnis").style.display = "block";
+  $("ergebnis").scrollIntoView({behavior:"smooth", block:"start"});
+};
+
+// Teilen-Dialog des Telefons, falls vorhanden — dort steht WhatsApp oben.
+// Sonst bleibt der wa.me-Link stehen (Rechner).
+$("btn-teilen").addEventListener("click", e=>{
+  if(navigator.share){
+    e.preventDefault();
+    navigator.share({text: e.currentTarget.dataset.nachricht}).catch(()=>{});
+  }
+});
+
+// Keine alert()/confirm()-Dialoge: die lassen sich im Browser dauerhaft abschalten,
+// danach passiert beim Klick gar nichts mehr. Rueckmeldung deshalb im Knopf selbst.
+function kurzMelden(knopf, text){
+  const alt = knopf.textContent;
+  knopf.textContent = text;
+  setTimeout(()=>{ knopf.textContent = alt; }, 1800);
+}
+
+$("btn-kopieren").onclick = e => {
+  const link = $("linkfeld").textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link)
+      .then(()=>kurzMelden(e.currentTarget,"Kopiert"))
+      .catch(()=>kurzMelden(e.currentTarget,"Ging nicht — bitte von Hand markieren"));
+  } else {
+    kurzMelden(e.currentTarget,"Bitte von Hand markieren");
+  }
+};
+
+$("btn-neu").onclick = () => {
+  $("name").value = "";
+  $("ergebnis").style.display = "none";
+  $("name").focus();
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+</script>
+</body>
+</html>

@@ -103,6 +103,9 @@
     <div class="frage" id="start-frage"></div>
     <div class="skala" id="skala"></div>
     <div class="skala-enden"><span>überhaupt nicht wahrscheinlich</span><span>äußerst wahrscheinlich</span></div>
+    <!-- Wird nur eingeblendet, wenn der Namensschritt uebersprungen wurde (Name kam aus dem Link).
+         Sonst steht der Datenschutzhinweis dort und der Kunde saehe ihn hier nie. -->
+    <div class="mini datenschutz" id="datenschutz-hinweis-2" style="display:none"></div>
   </div>
 
   <!-- SCHRITT 2a: Verbesserung -->
@@ -316,6 +319,16 @@ function meckern(text){
   $("name-hinweis").classList.add("an");
 }
 
+// Name steht fest -> Begrüßung bauen und zur Bewertungsfrage
+function weiterZurFrage(){
+  ansprache = DU ? name : ((anrede ? anrede+" " : "") + name);
+  const gruss = DU ? ("Kurze Frage, "+name+": Wie zufrieden warst du?") : ("Guten Tag, "+ansprache+": Wie zufrieden waren Sie?");
+  $("start-titel").textContent = gruss;
+  $("start-sub").textContent = T.startSub;
+  $("tief-titel").textContent = T.tiefTitel;
+  zeige("s-start");
+}
+
 // Schritt 0 -> 1
 $("btn-name-weiter").onclick=()=>{
   // Im Sie-Modus ist Herr/Frau Pflicht — sonst stünde da "Guten Tag, Schmitz"
@@ -331,13 +344,37 @@ $("btn-name-weiter").onclick=()=>{
     $("name-input").focus(); $("name-input").style.borderColor="var(--rot)"; return;
   }
   $("name-hinweis").classList.remove("an");
-  ansprache = DU ? name : ((anrede ? anrede+" " : "") + name);
-  const gruss = DU ? ("Kurze Frage, "+name+": Wie zufrieden warst du?") : ("Guten Tag, "+ansprache+": Wie zufrieden waren Sie?");
-  $("start-titel").textContent = gruss;
-  $("start-sub").textContent = T.startSub;
-  $("tief-titel").textContent = T.tiefTitel;
-  zeige("s-start");
+  weiterZurFrage();
 };
+
+/* Name vorab aus dem Link (von Leon vorbereitet, siehe einladung.html):
+   ?n=Schmitz&a=Herr  bzw.  ?form=du&n=Max
+   Dann entfaellt die Namensfrage — der Kunde kann sich nicht mehr vertippen.
+   Das ist wichtig, weil der Name spaeter im geteilten Empfehlungslink steht
+   ("weiterempfohlen von …") und ein Tippfehler dort bei Fremden landet.
+   Faellt auf die normale Abfrage zurueck, wenn die Angaben unvollstaendig sind. */
+(function nameAusLink(){
+  const p = new URLSearchParams(location.search);
+  const vorgabe = (p.get("n")||"").trim().replace(/\s+/g," ");
+  if(!vorgabe) return;
+  name = grossAnfang(vorgabe);
+
+  if(!DU){
+    const a = (p.get("a")||"").trim().toLowerCase();
+    anrede = a==="frau" ? "Frau" : a==="herr" ? "Herr" : "";
+    // Ohne Anrede stuende da "Guten Tag, Schmitz" — dann lieber doch fragen,
+    // aber mit vorausgefuelltem Namen.
+    if(!anrede){
+      $("name-input").value = name;
+      return;
+    }
+  }
+  // Der Datenschutzhinweis steht im uebersprungenen Schritt — hierher mitnehmen.
+  const h2 = $("datenschutz-hinweis-2");
+  h2.textContent = $("datenschutz-hinweis").textContent;
+  if(h2.textContent) h2.style.display = "block";
+  weiterZurFrage();
+})();
 $("name-input").addEventListener("keydown",e=>{ if(e.key==="Enter") $("btn-name-weiter").click(); });
 
 // Skala 1-10
