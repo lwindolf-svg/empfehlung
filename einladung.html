@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Einladung vorbereiten</title>
+<!-- Als App auf dem Startbildschirm: Icon, eigener Fensterrahmen ohne Browserleiste. -->
+<link rel="manifest" href="app.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png?v=3">
+<link rel="icon" href="icon-180.png?v=3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Empfehlung">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1b8d83">
 <!--
   ============================================================================
   NUR FÜR LEON — nicht für Kunden.
@@ -61,6 +70,17 @@
   .btn.wa{background:var(--gruen);color:#04310f}
   .btn.still{background:#fff;color:var(--text);border:1px solid var(--linie)}
   .hinweis{color:var(--rot);font-size:14px;margin-top:8px;display:none}
+  /* Menue: alle oeffentlichen Seiten aus der App heraus erreichbar.
+     Bewusst NICHT hier: Auswertung, Cockpit und die Google-Tabelle. Die Seite ist
+     oeffentlich abrufbar, dort duerfen keine Adressen mit Kundendaten stehen. */
+  .menu{margin-top:2px}
+  .menu a{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;border:1px solid var(--linie);border-radius:11px;background:#fff;
+    color:var(--text);text-decoration:none;margin-top:8px;font-size:15px}
+  .menu a:active{background:#faf6ea}
+  .menu a .pfeil{color:var(--gold-flaeche);font-weight:700}
+  .menu a small{display:block;color:var(--schwach);font-size:12.5px;font-weight:400;margin-top:2px}
+  .menu-titel{font-weight:700;font-size:15px;margin-bottom:2px}
   .hinweis.an{display:block}
   #ergebnis{display:none}
   .qr{display:flex;justify-content:center;padding:18px 0 6px}
@@ -116,11 +136,70 @@
     </div>
   </div>
 
+  <div class="karte menu">
+    <div class="menu-titel">Meine Seiten</div>
+    <p class="sub" style="margin-top:4px">So sieht der Kunde sie.</p>
+
+    <a href="check.html?form=sie" target="_blank" rel="noopener">
+      <span>Zufriedenheits-Check <small>Förmlich &mdash; Herr / Frau</small></span>
+      <span class="pfeil">&rsaquo;</span>
+    </a>
+    <a href="check.html?form=du" target="_blank" rel="noopener">
+      <span>Zufriedenheits-Check <small>Locker &mdash; Du</small></span>
+      <span class="pfeil">&rsaquo;</span>
+    </a>
+    <a href="index.html" target="_blank" rel="noopener">
+      <span>Empfehlungsseite <small>Das sieht der Freund, der empfohlen wird</small></span>
+      <span class="pfeil">&rsaquo;</span>
+    </a>
+    <a href="datenschutz.html" target="_blank" rel="noopener">
+      <span>Datenschutz <small>Pflichtseite</small></span>
+      <span class="pfeil">&rsaquo;</span>
+    </a>
+
+    <a href="https://docs.google.com/spreadsheets/d/1t8P7OBt7G4pzIpnnWCdoNugCLGBUzPrN9t22W4-5sAM/edit" target="_blank" rel="noopener">
+      <span>Google-Tabelle <small>Alle Bewertungen und Anfragen &mdash; braucht deinen Google-Login</small></span>
+      <span class="pfeil">&rsaquo;</span>
+    </a>
+
+    <!-- Nur am Rechner: Auswertung und Cockpit sind lokale Dateien und zeigen
+         Kundennamen. Die Links sind relativ, laufen also nur neben dem
+         CEO-GPT-Ordner ins Ziel. Auf der oeffentlichen Seite werden sie
+         ausgeblendet (siehe nurLokal() unten). -->
+    <div id="nur-lokal" hidden>
+      <a href="../empfehlungs-auswertung/index.html" target="_blank" rel="noopener">
+        <span>Auswertung <small>NPS, Stichworte, Empfehlungsketten &mdash; nur am Rechner</small></span>
+        <span class="pfeil">&rsaquo;</span>
+      </a>
+      <a href="../empfehlungs-cockpit/index.html" target="_blank" rel="noopener">
+        <span>Cockpit <small>Kanban zum Nachhalten &mdash; nur am Rechner</small></span>
+        <span class="pfeil">&rsaquo;</span>
+      </a>
+    </div>
+
+    <div class="mini" style="margin-top:14px" id="lokal-hinweis">
+      Auswertung und Cockpit liegen als Dateien auf deinem Rechner und zeigen Kundennamen.
+      Am Handy erscheinen sie deshalb nicht.
+    </div>
+  </div>
+
 </div>
 
 <script src="qrcode.js"></script>
 <script>
 /* ============ HIER ANPASSEN ============ */
+/* Auswertung und Cockpit nur zeigen, wenn die Seite lokal laeuft (Doppelklick
+   oder Vorschau-Server). Auf der oeffentlichen Adresse fuehren die relativen
+   Links ins Leere und haben dort auch nichts zu suchen. */
+(function nurLokal(){
+  const h = location.hostname;
+  const lokal = location.protocol === "file:" || h === "localhost" || h === "127.0.0.1";
+  if (lokal) {
+    document.getElementById("nur-lokal").hidden = false;
+    document.getElementById("lokal-hinweis").hidden = true;
+  }
+})();
+
 const KONFIG = {
   // Adresse der Check-Seite. Muss oeffentlich erreichbar sein, sonst kann der
   // Kunde den QR-Code nicht oeffnen.

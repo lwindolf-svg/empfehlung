@@ -204,11 +204,11 @@ const KONFIG = {
 //           So sind echte Bewertungen geschrieben — Verb-Sätze wirken dort gebastelt.
 const ADJEKTIVE = [
   {wort:"kompetent",
-   sagt:["kennt sich ausgezeichnet aus","weiß genau, wovon er spricht","verfügt über sehr fundiertes Wissen"],
+   sagt:["kennt sich ausgezeichnet aus","weiß genau, wovon er spricht","weiß wirklich, was er tut"],
    lob:["echter Fachkompetenz","fundiertem Wissen"]},
 
   {wort:"ehrlich & transparent",
-   sagt:["ist ehrlich und legt alles offen","sagt klar, woran man ist","geht sehr transparent vor"],
+   sagt:["ist ehrlich und legt alles offen","sagt ehrlich, was Sache ist","spielt mit offenen Karten"],
    lob:["Ehrlichkeit und Transparenz","einer offenen, ehrlichen Art"]},
 
   {wort:"verständlich erklärt",
@@ -228,7 +228,7 @@ const ADJEKTIVE = [
    lob:["einer sehr sympathischen Art","einem angenehmen, souveränen Auftreten"]},
 
   {wort:"gut vorbereitet",
-   sagt:["ist bestens vorbereitet","bereitet sich sehr gründlich vor","hat sich vorab gut eingearbeitet"],
+   sagt:["ist bestens vorbereitet","bereitet sich sehr gründlich vor","hat sich vorher gründlich eingelesen"],
    lob:["spürbar guter Vorbereitung","einer sehr sorgfältigen Vorbereitung"]},
 
   {wort:"schnell erreichbar",
@@ -418,7 +418,8 @@ for(let i=0;i<=10;i++){
     // Sofort melden — falls der Kunde jetzt abbricht, ist die Zahl trotzdem erfasst.
     // Beim Weiterklicken folgt eine zweite Zeile mit denselben Kennung und den Stichworten;
     // die Auswertung nimmt pro Kennung nur die letzte.
-    melde({art:"bewertung", bewertung:i, anrede:anrede, name:name, stichworte:[]});
+    melde({art:"bewertung", bewertung:i, anrede:anrede, name:name, stichworte:[],
+           teilenMoeglich: i >= KONFIG.positivAb});
     if(i>=KONFIG.positivAb){ baueChips(); zeige("s-hoch"); } else { zeige("s-tief"); }
   };
   skala.appendChild(b);
@@ -450,7 +451,8 @@ function wa(nummer, text){ return "https://wa.me/"+(nummer||"")+"?text="+encodeU
 // Früher lief das über WhatsApp: Medienbruch, landete im Chatverlauf, nicht auswertbar.
 $("btn-feedback").onclick=()=>{
   melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name,
-         stichworte:[], feedback:$("verbesserung").value.trim()});
+         stichworte:[], feedback:$("verbesserung").value.trim(),
+         teilenMoeglich:false});   // unter der Grenze wird Teilen nie angeboten
   $("danke-titel").textContent = DU ? ("Danke, "+name+"!") : ("Vielen Dank, "+ansprache+"!");
   zeige("s-danke");
 };
@@ -471,7 +473,15 @@ function baueListe(feld){
   // gewählten Teile und weicht auf eine andere Variante aus, sobald sich eins
   // wiederholen würde — sonst steht da "weiß, wovon er spricht ... spricht auf Augenhöhe".
   const inhalt = s => s.toLowerCase().replace(/[^a-zäöüß ]/g," ").split(/\s+/).filter(w=>w.length>4);
+  const erstes = s => s.split(" ")[0].toLowerCase();
+  const letztes = s => s.split(" ").pop().toLowerCase().replace(/[^a-zäöüß]/g,"");
   const verbraucht = new Set();
+  // Kurze Verben wie "ist" rutschen durch die Wortpruefung (erst ab 5 Buchstaben)
+  // und ergaben "ist ehrlich ... und ist ausgesprochen sympathisch".
+  const anfaenge = new Set();
+  // Auch ueber die Teilgrenze hinweg pruefen, sonst steht da
+  // "..., woran man ist, und ist ausgesprochen sympathisch".
+  let vorherLetztes = "";
   const gewaehlte = ADJEKTIVE.filter(a=>gewaehlt.has(a.wort));
   // Bei mehreren Teilen zaehlt die Aufzaehlung schon ein "und" — Varianten, die selbst
   // eines enthalten, ergaeben "ist ehrlich und legt alles offen und erklaert ...".
@@ -479,17 +489,30 @@ function baueListe(feld){
   const teile = gewaehlte.map(a=>{
     let moeglich = a[feld].filter(s=>!inhalt(s).some(w=>verbraucht.has(w)));
     if(!moeglich.length) moeglich = a[feld];
+    const andererAnfang = moeglich.filter(s=>
+      !anfaenge.has(erstes(s)) && erstes(s) !== vorherLetztes);
+    if(andererAnfang.length) moeglich = andererAnfang;
     if(gewaehlte.length > 1){
       const ohneUnd = moeglich.filter(s=>!/ und /.test(s));
       if(ohneUnd.length) moeglich = ohneUnd;
     }
     const teil = zufall(moeglich);
     inhalt(teil).forEach(w=>verbraucht.add(w));
+    anfaenge.add(erstes(teil));
+    vorherLetztes = letztes(teil);
     return teil;
   });
   if(!teile.length) return "";
   if(teile.length===1) return teile[0];
-  return teile.slice(0,-1).join(", ") + " und " + teile[teile.length-1];
+  // Endet der Teil vor dem "und" auf einem Nebensatz ("... weiß genau, wovon er
+  // spricht"), muss der geschlossen werden: "..., wovon er spricht, und sagt ...".
+  // Ohne das Komma war jeder zweite fertige Text grammatisch falsch.
+  const vorletzter = teile[teile.length-2];
+  // Nur bei "sagt": dort sind Kommas immer Nebensaetze ("wovon er spricht").
+  // Bei "lob" trennen sie Adjektive ("einer offenen, ehrlichen Art") - davor
+  // gehoert kein Komma, das waere derselbe Fehler in die andere Richtung.
+  const fuge = (feld === "sagt" && vorletzter.includes(",")) ? ", und " : " und ";
+  return teile.slice(0,-1).join(", ") + fuge + teile[teile.length-1];
 }
 
 // Kurz halten (Entscheidung Leon 04.08.2026): Eine Nachricht mit fünf Saetzen liest
@@ -514,8 +537,8 @@ const EINSTIEG = [
 // Richtung um: nicht "bitte komm", sondern "du kommst rein".
 const MEHRWERT = [
   "Er nimmt neue Leute nur auf Empfehlung, über mich bekommst du einen kostenlosen Finanz-Check: ",
-  "Ich kann dich bei ihm empfehlen, dann ist der Finanz-Check für dich kostenlos: ",
-  "Falls du magst, über meine Empfehlung ist der Finanz-Check für dich kostenlos: ",
+  "Wenn ich dich empfehle, ist der Finanz-Check für dich kostenlos: ",
+  "Über meine Empfehlung ist der Finanz-Check für dich kostenlos: ",
   "Empfohlene bekommen bei ihm einen kostenlosen Finanz-Check, schau gern rein: "
 ];
 
@@ -573,7 +596,8 @@ function googleText(){
 }
 $("btn-text-erstellen").onclick=()=>{
   // Zweite Meldung mit denselben Kennung, jetzt mit den Stichworten.
-  melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name, stichworte:[...gewaehlt]});
+  melde({art:"bewertung", bewertung:bewertung, anrede:anrede, name:name, stichworte:[...gewaehlt],
+         teilenMoeglich:true});
   $("empf-text").value = friendText();
   // Adresse gleich hinterlegen, damit der Knopf auch ohne Klick-Handler ein echter Link ist.
   $("btn-teilen").href = wa("", $("empf-text").value);
